@@ -7,6 +7,26 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 
+/**
+ * This is the model class for table "user".
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $surname
+ * @property string $patronymic
+ * @property string $email
+ * @property string $auth_key
+ * @property string $password_hash
+ * @property string|null $password_reset_token
+ * @property string|null $verification_token
+ * @property int $created_at
+ * @property int $updated_at
+ * @property int $status
+ *
+ * @property Favorite[] $favorites
+ * @property Product[] $products
+ * @property Review[] $reviews
+ */
 class User extends ActiveRecord implements \yii\web\IdentityInterface
 {
     const STATUS_DELETED = 0;
@@ -28,9 +48,66 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
     public function rules()
     {
         return [
+            [['created_at', 'updated_at', 'status'], 'integer'],
+            [['name', 'surname', 'patronymic', 'auth_key'], 'string', 'max' => 32],
+            [['email', 'password_hash', 'password_reset_token', 'verification_token'], 'string', 'max' => 255],
+            [['email'], 'unique'],
+            [['password_reset_token'], 'unique'],
+            [['verification_token'], 'unique'],
             ['status', 'default', 'value' => self::STATUS_INACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'name' => 'Имя',
+            'surname' => 'Фамилия',
+            'patronymic' => 'Отчество',
+            'email' => 'Почта',
+            'auth_key' => 'Auth Key',
+            'password_hash' => 'Password Hash',
+            'password_reset_token' => 'Токен сброса пароля',
+            'verification_token' => 'Токен верификации',
+            'created_at' => 'Дата и время регистрации',
+            'updated_at' => 'Дата и время верификации',
+            'status' => 'Status',
+        ];
+    }
+
+    /**
+     * Gets query for [[Favorites]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getFavorites()
+    {
+        return $this->hasMany(Favorite::class, ['user_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Products]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getProducts()
+    {
+        return $this->hasMany(Product::class, ['id' => 'product_id'])->viaTable('product_user', ['user_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Reviews]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getReviews()
+    {
+        return $this->hasMany(Review::class, ['user_id' => 'id']);
     }
 
     /**
