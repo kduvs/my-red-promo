@@ -9,6 +9,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use app\models\UploadForm;
 use yii\web\UploadedFile;
+use Yii;
 
 /**
  * ProductController implements the CRUD actions for Product model.
@@ -40,6 +41,9 @@ class ProductController extends Controller
      */
     public function actionIndex()
     {
+        if (!Yii::$app->user->identity->isAdmin) {
+            throw new NotFoundHttpException(Yii::t('yii', 'Page not found.'));
+        }
         $searchModel = new ProductSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
@@ -69,6 +73,9 @@ class ProductController extends Controller
      */
     public function actionCreate()
     {
+        if (!Yii::$app->user->identity->isAdmin) {
+            throw new NotFoundHttpException(Yii::t('yii', 'Page not found.'));
+        }
         $model = new Product();
 
         if ($this->request->isPost) {
@@ -100,6 +107,9 @@ class ProductController extends Controller
      */
     public function actionUpdate($id)
     {
+        if (!Yii::$app->user->identity->isAdmin) {
+            throw new NotFoundHttpException(Yii::t('yii', 'Page not found.'));
+        }
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post())) {
@@ -127,6 +137,9 @@ class ProductController extends Controller
      */
     public function actionDelete($id)
     {
+        if (!Yii::$app->user->identity->isAdmin) {
+            throw new NotFoundHttpException(Yii::t('yii', 'Page not found.'));
+        }
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);

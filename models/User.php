@@ -226,4 +226,14 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
     {
         $this->password_reset_token = null;
     }
+
+    /**
+     * Проверка на админа
+     *
+     * @return bool true, если админ, иначе - false
+     */
+    public function getIsAdmin(): bool
+    {
+        return isset(Yii::$app->authManager->getRolesByUser(Yii::$app->user->getId())['admin']);
+    }
 }
