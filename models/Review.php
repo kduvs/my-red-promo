@@ -3,6 +3,9 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "review".
@@ -16,7 +19,7 @@ use Yii;
  * @property Product $product
  * @property User $user
  */
-class Review extends \yii\db\ActiveRecord
+class Review extends ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -26,13 +29,26 @@ class Review extends \yii\db\ActiveRecord
         return 'review';
     }
 
+    public function behaviors(){
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at']
+                ],
+                // если вместо метки времени UNIX используется datetime:
+                'value' => new Expression('NOW()'),
+            ],
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['user_id', 'product_id'], 'required'],
+            [['user_id', 'product_id', 'text'], 'required'],
             [['user_id', 'product_id'], 'integer'],
             [['created_at'], 'safe'],
             [['text'], 'string'],
@@ -50,8 +66,8 @@ class Review extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => 'User ID',
             'product_id' => 'Product ID',
-            'created_at' => 'Created At',
-            'text' => 'Text',
+            'created_at' => 'Опубликовано в ',
+            'text' => 'Отзыв',
         ];
     }
 

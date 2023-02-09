@@ -1,7 +1,8 @@
 <?php
 
-use yii\helpers\Html;
 use yii\widgets\DetailView;
+use yii\bootstrap5\ActiveForm;
+use yii\bootstrap5\Html;
 
 /** @var yii\web\View $this */
 /** @var app\models\Product $model */
@@ -32,6 +33,9 @@ $this->title = $model->title;
 
     <?= DetailView::widget([
         'model' => $model,
+        'template' => "<tr><th style='width: 15%;'>{label}</th><td>{value}</td></tr>",
+        // 'options' => ['style' => 'width: auto;'],
+        'options' => ['class' => 'table table-striped table-bordered detail-view', 'style' => 'width: 40%;'],
         'attributes' => [
             'title',
             'description:ntext',
@@ -48,4 +52,13 @@ $this->title = $model->title;
         ],
     ]) ?>
 
+    <?php
+    if (!is_null($review)) {
+        $form = ActiveForm::begin();
+        echo $form->field($review, 'text')->textarea(['rows' => 3]);
+        echo Html::submitButton('Опубликовать', ['class' => 'btn btn-primary']);
+        ActiveForm::end();
+    } 
+    echo $this->render('lol');
+    ?>
 </div>

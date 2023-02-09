@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\Product;
 use app\models\ProductSearch;
+use app\models\Review;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -61,8 +62,20 @@ class ProductController extends Controller
      */
     public function actionView($id)
     {
+        if (Yii::$app->user->can('createReview')) {
+            $review = new Review();
+            if ($this->request->isPost) {
+                if ($review->load($this->request->post())) {
+                    $review->user_id = Yii::$app->user->identity->id;
+                    $review->product_id = $id;
+                    $review->save();
+                    $review = new Review();
+                }
+            }
+        } else $review = null;
         return $this->render('view', [
             'model' => $this->findModel($id),
+            'review' => $review,
         ]);
     }
 

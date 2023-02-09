@@ -12,9 +12,15 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\SignupForm;
 use app\models\PasswordResetRequestForm;
+use app\models\Category;
 use app\models\ResetPasswordForm;
 use app\models\ResendVerificationEmailForm;
+use app\models\Review;
 use app\models\VerifyEmailForm;
+use PhpParser\Node\Expr\Isset_;
+use yii\widgets\ListView;
+use yii\data\ActiveDataProvider;
+use yii\web\NotFoundHttpException;
 
 class SiteController extends Controller
 {
@@ -68,6 +74,52 @@ class SiteController extends Controller
     public function actionIndex()
     {
         return $this->render('index');
+        // $productProvider = new ActiveDataProvider([
+        //     'query' => Product::find()
+        //         ->joinWith('user')
+        //         ->where(['user.id' => Yii::$app->user->identity->getId()])->limit(5),
+        //     'pagination' => [
+        //         'pageSize' => 5,
+        //     ],
+        // ]);
+        // $products = ListView::widget([
+        //     'dataProvider' => $productProvider,
+        //     'itemView' => '_product',
+        // ]);
+        
+        // // $doubleSubQuery = Category::find()
+        // //     ->select('id, COUNT(product_id) as cnt')
+        // //     ->leftJoin(['sub_query' => $categorySubQuery], 'sub_query.product_id = product_id')
+        // //     ->groupBy('id')
+        // //     ->orderBy('cnt DESC');
+        // // $categoryQuery = Category::find()->where(['in', 'id', $doubleSubQuery])
+
+        // $categorySubQuery = Review::find()
+        //     ->select('product_id, COUNT(product_id) as cnt')
+        //     ->groupBy('product_id');
+        
+        // $categoryQuery = Category::find()
+        //     ->select('id, MAX(cnt) as popular')
+        //     ->leftJoin(['sub_query' => $categorySubQuery], 'sub_query.product_id = category.product_id')
+        //     ->groupBy('id')
+        //     ->orderBy('popular DESC');
+
+        // $categoryProvider = new ActiveDataProvider([
+        //     'query' => $categoryQuery->limit(5),
+        //     'pagination' => [
+        //         'pageSize' => 5,
+        //     ],
+        // ]);
+
+        // $categories = ListView::widget([
+        //     'dataProvider' => $categoryProvider,
+        //     'itemView' => '_category',
+        // ]);
+        
+        // return $this->render('index', [
+        //     'products' => $products,
+        //     'categories' => $categories,
+        // ]);
     }
 
     /**
