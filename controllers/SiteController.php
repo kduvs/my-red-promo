@@ -196,6 +196,11 @@ class SiteController extends Controller
         if ($user = $model->verifyEmail()) {
             if (Yii::$app->user->login($user)) {
                 Yii::$app->session->setFlash('success', 'Ваш адрес электронной почты был подтвержден!');
+                $auth = Yii::$app->authManager;
+                if (($userId = $user->getId()) == 1) {
+                    $role = $auth->getRole('admin');
+                } else $role = $auth->getRole('user');
+                $auth->assign($role, $user->getId());
                 return $this->goHome();
             }
         }
