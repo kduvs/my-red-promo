@@ -58,7 +58,6 @@ $this->title = $model->title;
         echo $form->field($review, 'text')->textarea(['rows' => 3]);
         echo Html::submitButton('Опубликовать', ['class' => 'btn btn-primary']);
         ActiveForm::end();
-    } 
-    echo $this->render('lol');
+    }
     ?>
 </div>
