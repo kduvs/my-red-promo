@@ -18,11 +18,6 @@ class m230208_162549_insert_category_table extends Migration
             ['League of Legends'],
             ['Dota 2'],
             ['CS GO'],
-            ['Enlisted'],
-            ['Heartstone'],
-            ['Hogwarts Legacy'],
-            ['Overwatch 2'],
-            ['Valorant'],
         ]);
     }
 
