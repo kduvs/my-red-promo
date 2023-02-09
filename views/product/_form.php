@@ -1,11 +1,11 @@
 <?php
 
-use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\bootstrap5\ActiveForm;
+use yii\bootstrap5\Html;
 
 /** @var yii\web\View $this */
 /** @var app\models\Product $model */
-/** @var yii\widgets\ActiveForm $form */
+/** @var yii\bootstrap5\ActiveForm $form */
 ?>
 
 <div class="product-form">
@@ -16,9 +16,21 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'description')->textarea(['rows' => 6]) ?>
 
-    <?= $form->field($model, 'image')->textInput(['maxlength' => true]) ?>
-
     <?= $form->field($model, 'price')->textInput() ?>
+
+    <?= $form->field($model, 'image')->fileInput() ?>
+
+    <?php
+        if ($model->image) {
+            echo '<b>Прикреплённый файл:</b><br>';
+            echo Html::img(
+                \Yii::$app->request->BaseUrl . '/' . $model->image,
+                [
+                    'style' => 'height: 200px'
+                ]
+            ) . '<p>';
+        }
+    ?>
 
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>

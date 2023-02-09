@@ -29,11 +29,18 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
-            'id',
             'title',
             'description:ntext',
-            'image',
             'price',
+            [
+                'label' => 'Изображение',
+                'format' => 'raw',
+                'value' => function($data) {
+                    return Html::img(\Yii::$app->request->BaseUrl . '/' . $data->image ,[
+                        'style' => 'height: 200px'
+                    ]);
+                },
+            ],
         ],
     ]) ?>
 

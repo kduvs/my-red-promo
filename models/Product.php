@@ -107,4 +107,17 @@ class Product extends \yii\db\ActiveRecord
     {
         return $this->hasMany(User::class, ['id' => 'user_id'])->viaTable('product_user', ['product_id' => 'id']);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeDelete() {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+        if ($this->image){
+            unlink(Yii::$app->basePath . '/web/' . $this->image);
+        }
+        return true;
+    }
 }

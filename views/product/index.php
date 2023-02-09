@@ -33,10 +33,18 @@ $this->params['breadcrumbs'][] = $this->title;
             'id',
             'title',
             'description:ntext',
-            'image',
             'price',
             [
-                'class' => ActionColumn::className(),
+                'label' => 'Изображение',
+                'format' => 'raw',
+                'value' => function($data) {
+                    return Html::img(\Yii::$app->request->BaseUrl . '/' . $data->image ,[
+                        'style' => 'height: 200px'
+                    ]);
+                },
+            ],
+            [
+                'class' => ActionColumn::class,
                 'urlCreator' => function ($action, Product $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                  }
