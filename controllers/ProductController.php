@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Product;
 use app\models\ProductSearch;
 use app\models\Review;
+use yii\data\Pagination;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -73,9 +74,24 @@ class ProductController extends Controller
                 }
             }
         } else $review = null;
+
+        $review_query = Review::find()->where(['product_id' => $id]);
+
+        $pagination = new Pagination([
+            'defaultPageSize' => 5,
+            'totalCount' => $review_query->count(),
+        ]);
+
+        $reviews = $review_query->orderBy('created_at DESC')
+            ->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+
         return $this->render('view', [
             'model' => $this->findModel($id),
             'review' => $review,
+            'reviews' => $reviews,
+            'pagination' => $pagination,
         ]);
     }
 

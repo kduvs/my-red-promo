@@ -3,6 +3,8 @@
 use yii\widgets\DetailView;
 use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
+use yii\bootstrap5\LinkPager;
+use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
 /** @var app\models\Product $model */
@@ -11,46 +13,62 @@ $this->title = $model->title;
 \yii\web\YiiAsset::register($this);
 ?>
 <div class="product-view">
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <p>
-        <?php
-        if(\Yii::$app->user->identity->isAdmin) {
-            $this->params['breadcrumbs'][] = ['label' => 'Товары', 'url' => ['index']];
-            echo Html::a('Изменить', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']);
-            echo Html::a('Удалить', ['delete', 'id' => $model->id], [
-                'class' => 'btn btn-danger',
-                'data' => [
-                    'confirm' => 'Вы точно хотите удалть этот товар?',
-                    'method' => 'post',
+    <?php Pjax::begin(); ?>
+    <div class="d-flex justify-content-center gap-5 mt-5">
+        <div class="list-group ml-auto w-auto">
+            <?php 
+            echo DetailView::widget([
+                'model' => $model,
+                'attributes' => [
+                    'title',
+                    'description:ntext',
+                    'price',
+                    [
+                        'label' => 'Изображение',
+                        'format' => 'raw',
+                        'value' => function($data) {
+                            return Html::img(\Yii::$app->request->BaseUrl . '/' . $data->image ,[
+                                'style' => 'height: 200px'
+                            ]);
+                        },
+                    ],
                 ],
             ]);
-        }
-        $this->params['breadcrumbs'][] = $this->title;
-        ?>
-    </p>
+            
+            if(\Yii::$app->user->identity->isAdmin) {
+                $this->params['breadcrumbs'][] = ['label' => 'Товары', 'url' => ['index']];
+                echo Html::a('Изменить', ['update', 'id' => $model->id], ['class' => 'btn btn-primary w-25']);
+                echo Html::a('Удалить', ['delete', 'id' => $model->id], [
+                    'class' => 'btn btn-danger w-25 mt-2',
+                    'data' => [
+                        'confirm' => 'Вы точно хотите удалть этот товар?',
+                        'method' => 'post',
+                    ],
+                ]);
+            }
+            $this->params['breadcrumbs'][] = $this->title;
+            ?>
+        </div>
+        <div class="list-group mx-auto w-auto">
+            <div class="list-group w-auto">
+            <h2>Отзывы</h2>
+            <?php foreach ($reviews as $item): ?>
+                <div class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                    <div class="d-flex gap-5 w-100 justify-content-between">
+                    <div>
+                        <h6 class="mb-0"><?= $item->user->name;?></h6>
+                        <p class="mb-0 opacity-75"><?= $item->text;?></p>
+                    </div>
+                    <small class="opacity-50 text-nowrap"><?= $item->created_at; ?></small>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            <?= LinkPager::widget(['pagination' => $pagination]) ?>
+            </div>
+        </div>
+    </div>
 
-    <?= DetailView::widget([
-        'model' => $model,
-        'template' => "<tr><th style='width: 15%;'>{label}</th><td>{value}</td></tr>",
-        // 'options' => ['style' => 'width: auto;'],
-        'options' => ['class' => 'table table-striped table-bordered detail-view', 'style' => 'width: 40%;'],
-        'attributes' => [
-            'title',
-            'description:ntext',
-            'price',
-            [
-                'label' => 'Изображение',
-                'format' => 'raw',
-                'value' => function($data) {
-                    return Html::img(\Yii::$app->request->BaseUrl . '/' . $data->image ,[
-                        'style' => 'height: 200px'
-                    ]);
-                },
-            ],
-        ],
-    ]) ?>
+    
 
     <?php
     if (!is_null($review)) {
@@ -59,5 +77,6 @@ $this->title = $model->title;
         echo Html::submitButton('Опубликовать', ['class' => 'btn btn-primary']);
         ActiveForm::end();
     }
+    Pjax::end();
     ?>
 </div>
