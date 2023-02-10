@@ -21,6 +21,7 @@ use yii\db\Expression;
  */
 class Review extends ActiveRecord
 {
+    public $cnt;
     /**
      * {@inheritdoc}
      */

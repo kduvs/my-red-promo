@@ -9,10 +9,12 @@ use yii\web\Response;
 use yii\web\BadRequestHttpException;
 use yii\base\InvalidArgumentException;
 use yii\filters\VerbFilter;
+use yii\data\Pagination;
 use app\models\LoginForm;
 use app\models\SignupForm;
 use app\models\PasswordResetRequestForm;
 use app\models\Category;
+use app\models\Product;
 use app\models\ResetPasswordForm;
 use app\models\ResendVerificationEmailForm;
 use app\models\Review;
@@ -73,53 +75,44 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
-        // $productProvider = new ActiveDataProvider([
-        //     'query' => Product::find()
-        //         ->joinWith('user')
-        //         ->where(['user.id' => Yii::$app->user->identity->getId()])->limit(5),
-        //     'pagination' => [
-        //         'pageSize' => 5,
-        //     ],
-        // ]);
-        // $products = ListView::widget([
-        //     'dataProvider' => $productProvider,
-        //     'itemView' => '_product',
-        // ]);
-        
-        // // $doubleSubQuery = Category::find()
-        // //     ->select('id, COUNT(product_id) as cnt')
-        // //     ->leftJoin(['sub_query' => $categorySubQuery], 'sub_query.product_id = product_id')
-        // //     ->groupBy('id')
-        // //     ->orderBy('cnt DESC');
-        // // $categoryQuery = Category::find()->where(['in', 'id', $doubleSubQuery])
+        $product_query = Product::find()->joinWith('users')
+            ->where(['user.id' => Yii::$app->user->identity->getId()]);
+        if (!is_null($product_query)) {
+            $product_pagination = new Pagination([
+                'defaultPageSize' => 5,
+                'totalCount' => $product_query->count(),
+            ]);
+    
+            $products = $product_query->orderBy('title DESC')
+                ->offset($product_pagination->offset)
+                ->limit($product_pagination->limit)
+                ->all();
+        } else {
+            $products = null;
+            $product_pagination = null;
+        }
 
-        // $categorySubQuery = Review::find()
-        //     ->select('product_id, COUNT(product_id) as cnt')
-        //     ->groupBy('product_id');
-        
-        // $categoryQuery = Category::find()
-        //     ->select('id, MAX(cnt) as popular')
-        //     ->leftJoin(['sub_query' => $categorySubQuery], 'sub_query.product_id = category.product_id')
-        //     ->groupBy('id')
-        //     ->orderBy('popular DESC');
+        $categorySubQuery = Review::find()
+            ->select('product_id, COUNT(product_id) as cnt')
+            ->groupBy('product_id');
 
-        // $categoryProvider = new ActiveDataProvider([
-        //     'query' => $categoryQuery->limit(5),
-        //     'pagination' => [
-        //         'pageSize' => 5,
-        //     ],
-        // ]);
+        if (!is_null($categorySubQuery)) {
+            $categories = Category::find()
+                ->select('category.title, MAX(cnt) as popular')
+                ->joinWith('products')
+                ->leftJoin(['sub_query' => $categorySubQuery], 'sub_query.product_id = product.id')
+                ->groupBy('category.title')
+                ->orderBy('popular DESC')
+                ->limit(3)
+                // ->asArray()
+                ->all();
+        }
 
-        // $categories = ListView::widget([
-        //     'dataProvider' => $categoryProvider,
-        //     'itemView' => '_category',
-        // ]);
-        
-        // return $this->render('index', [
-        //     'products' => $products,
-        //     'categories' => $categories,
-        // ]);
+        return $this->render('index', [
+            'products' => $products,
+            'product_pagination' => $product_pagination,
+            'categories' => $categories,
+        ]);
     }
 
     /**
