@@ -19,6 +19,7 @@ use app\models\ResetPasswordForm;
 use app\models\ResendVerificationEmailForm;
 use app\models\Review;
 use app\models\VerifyEmailForm;
+use yii\base\DynamicModel;
 use PhpParser\Node\Expr\Isset_;
 use yii\widgets\ListView;
 use yii\data\ActiveDataProvider;
@@ -75,21 +76,26 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $product_query = Product::find()->joinWith('users')
-            ->where(['user.id' => Yii::$app->user->identity->getId()]);
-        if (!is_null($product_query)) {
-            $product_pagination = new Pagination([
-                'defaultPageSize' => 5,
-                'totalCount' => $product_query->count(),
-            ]);
-    
-            $products = $product_query->orderBy('title DESC')
-                ->offset($product_pagination->offset)
-                ->limit($product_pagination->limit)
-                ->all();
+        if(!Yii::$app->user->isGuest) {
+            $product_query = Product::find()->joinWith('users')
+                ->where(['user.id' => Yii::$app->user->identity->getId()]);
+            if (!is_null($product_query)) {
+                $productPagination = new Pagination([
+                    'defaultPageSize' => 5,
+                    'totalCount' => $product_query->count(),
+                ]);
+        
+                $products = $product_query->orderBy('title DESC')
+                    ->offset($productPagination->offset)
+                    ->limit($productPagination->limit)
+                    ->all();
+            } else {
+                $products = [];
+                $productPagination = null;
+            }
         } else {
-            $products = null;
-            $product_pagination = null;
+            $products = [];
+            $productPagination = null;
         }
 
         $categorySubQuery = Review::find()
@@ -108,10 +114,56 @@ class SiteController extends Controller
                 ->all();
         }
 
+        // $search_query = Product::find()->joinWith('category')
+        //     ->andFilterWhere(['like', 'category.title', $this->title])
+        //     ->orFilterWhere(['like', 'product.title', $this->title]);
+        // $search_pagination = new Pagination([
+        //     'defaultPageSize' => 5,
+        //     'totalCount' => $search_query->count(),
+        // ]);
+        
+        // $search = $search_query->offset($search_pagination->offset)
+        //     ->limit($search_pagination->limit)->all();
+
+        $searchModel = new DynamicModel(['input']);
+        $searchModel->addRule(['input'], 'string', ['max' => 128]);
+        if ($searchModel->load(Yii::$app->request->post()) && $searchModel->validate()) {
+            $searchProductQuery = Product::find()->where(['like', 'title', $searchModel->input]);
+            $searchProductPagination = new Pagination([
+                'defaultPageSize' => 5,
+                'totalCount' => $searchProductQuery->count(),
+            ]);
+            $searchProducts = $searchProductQuery->orderBy('title DESC')
+                ->offset($searchProductPagination->offset)
+                ->limit($searchProductPagination->limit)
+                ->all();
+
+            $searchCategoryQuery = Category::find()->where(['like', 'title', $searchModel->input]);
+            $searchCategoryPagination = new Pagination([
+                'defaultPageSize' => 5,
+                'totalCount' => $searchCategoryQuery->count(),
+            ]);
+            $searchCategories = $searchCategoryQuery->orderBy('title DESC')
+                ->offset($searchCategoryPagination->offset)
+                ->limit($searchCategoryPagination->limit)
+                ->all();
+        }
+        else {
+            $searchProducts = [];
+            $searchProductPagination = [];
+            $searchCategories = [];
+            $searchCategoryPagination = [];
+        }
+
         return $this->render('index', [
             'products' => $products,
-            'product_pagination' => $product_pagination,
+            'productPagination' => $productPagination,
             'categories' => $categories,
+            'searchModel' => $searchModel,
+            'searchProducts' => $searchProducts,
+            'searchProductPagination' => $searchProductPagination,
+            'searchCategories' => $searchCategories,
+            'searchCategoryPagination' => $searchCategoryPagination,
         ]);
     }
 
